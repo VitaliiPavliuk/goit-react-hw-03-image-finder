@@ -1,4 +1,12 @@
 import { AiOutlineSearch } from 'react-icons/ai';
+import PropTypes from 'prop-types';
+import {
+  SearchbarHeader,
+  SearchForm,
+  SearchFormBtn,
+  SearchFormBtnLabel,
+  SearchFormInput,
+} from './Searchbar.styled';
 
 export const Searchbar = ({ onSubmit }) => {
   const handleSubmit = e => {
@@ -11,22 +19,23 @@ export const Searchbar = ({ onSubmit }) => {
   };
 
   return (
-    <header className="Searchbar">
-      <form className="SearchForm" onSubmit={handleSubmit}>
-        <button type="submit" className="SearchForm-button">
+    <SearchbarHeader>
+      <SearchForm onSubmit={handleSubmit}>
+        <SearchFormBtn type="submit">
           <AiOutlineSearch size={20} />
-          <span className="SearchForm-button-label">Search</span>
-        </button>
+          <SearchFormBtnLabel>Search</SearchFormBtnLabel>
+        </SearchFormBtn>
 
-        <input
+        <SearchFormInput
           name="query"
-          className="SearchForm-input"
           type="text"
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
         />
-      </form>
-    </header>
+      </SearchForm>
+    </SearchbarHeader>
   );
 };
+
+Searchbar.propTypes = { onSubmit: PropTypes.func.isRequired };

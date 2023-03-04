@@ -1,14 +1,42 @@
 import { Component } from 'react';
+import PropTypes from 'prop-types';
+
+import { ModalImage } from 'components/Modal/Modal';
+import { ImageGalleryItemImage } from './ImageGalleryItem.styled';
 
 export class ImageGalleryItem extends Component {
+  static propTypes = {
+    image: PropTypes.shape({
+      largeImageURL: PropTypes.string.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      tags: PropTypes.string,
+    }).isRequired,
+  };
+  state = {
+    isModalOpen: false,
+  };
+
+  openModal = () => this.setState({ isModalOpen: true });
+  closeModal = () => this.setState({ isModalOpen: false });
+
   render() {
+    const { isModalOpen } = this.state;
     const { image } = this.props;
+
     return (
-      <img
-        className="ImageGalleryItem-image"
-        src={image.webformatURL}
-        alt={image.tags}
-      />
+      <div>
+        <ModalImage
+          isOpen={isModalOpen}
+          image={image.largeImageURL}
+          onClose={this.closeModal}
+        />
+
+        <ImageGalleryItemImage
+          src={image.webformatURL}
+          alt={image.tags}
+          onClick={this.openModal}
+        />
+      </div>
     );
   }
 }

@@ -18,7 +18,5 @@ export const requestImages = async (query, page) => {
 
   const { data } = await axios.get(`${BASE_URL}`, searchParams);
 
-  console.log(data);
-
   return data;
 };
