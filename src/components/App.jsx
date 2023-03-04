@@ -1,14 +1,20 @@
 import { Component } from 'react';
-import { requestImages } from 'services/api';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+import { PER_PAGE, requestImages } from 'services/api';
 import { LoadMoreBtn } from './Button/Button';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Searchbar } from './Searchbar/Searchbar';
+import Loader from './Loader/Loader';
 
 export class App extends Component {
   state = {
-    query: 'dog',
+    query: '',
     page: 1,
     images: [],
+    isMore: false,
+    isLoading: false,
+    error: null,
   };
 
   handleLoadMore = () => {
@@ -19,69 +25,48 @@ export class App extends Component {
     this.setState({ query: searchTerm });
   };
 
-  componentDidMount() {
-    const fetchImages = async () => {
-      try {
-        // this.setState({ isLoading: true });
-        const images = await requestImages(this.state.query, this.state.page);
-        // console.log(images.hits);
-
-        this.setState({ images: images.hits });
-
-        console.log(this.state.images);
-      } catch (error) {
-        // this.setState({ error: error.message });
-        console.log(error);
-      } finally {
-        // this.setState({ isLoading: false });
-        console.log('finally');
-      }
-    };
-
-    fetchImages();
-  }
-
   componentDidUpdate(_, prevState) {
-    // if (
-    //   prevState.selectedPostId !== this.state.selectedPostId &&
-    //   this.state.selectedPostId !== null
-    // ) {
-    //   const fetchPostComments = async postId => {
-    //     try {
-    //       this.setState({ isLoading: true });
-    //       const comments = await requestPostComments(postId);
-
-    //       this.setState({ comments });
-    //     } catch (error) {
-    //       this.setState({ error: error.message });
-    //     } finally {
-    //       this.setState({ isLoading: false });
-    //     }
-    //   };
-
-    //   fetchPostComments(this.state.selectedPostId);
-    // }
-
     if (
       prevState.page !== this.state.page ||
       prevState.query !== this.state.query
     ) {
-      // Ваш запит на сервер за додатковими картинками
       const fetchImages = async () => {
         try {
-          // this.setState({ isLoading: true });
+          this.setState({ isLoading: true });
+
           const images = await requestImages(this.state.query, this.state.page);
-          // console.log(images.hits);
 
-          this.setState(prev => ({ images: [...prev.images, ...images.hits] }));
+          if (images.hits.length === 0) {
+            Notify.failure(
+              'Sorry, there are no images matching your search query. Please try again.'
+            );
+            return;
+          }
 
-          console.log(this.state.images);
+          if (images.totalHits - this.state.page * PER_PAGE > 0) {
+            this.setState({ isMore: true });
+          } else {
+            this.setState({ isMore: false });
+            Notify.info(
+              `We're sorry, but you've reached the end of search results.`
+            );
+          }
+
+          if (prevState.query !== this.state.query) {
+            this.setState({
+              images: images.hits,
+            });
+          }
+
+          if (prevState.page !== this.state.page) {
+            this.setState(prev => ({
+              images: [...prev.images, ...images.hits],
+            }));
+          }
         } catch (error) {
-          // this.setState({ error: error.message });
-          console.log(error);
+          this.setState({ error: error.message });
         } finally {
-          // this.setState({ isLoading: false });
-          console.log('finally');
+          this.setState({ isLoading: false });
         }
       };
 
@@ -92,9 +77,17 @@ export class App extends Component {
   render() {
     return (
       <div className="App">
-        <Searchbar />
+        <Searchbar onSubmit={this.handleSetSearchQuery} />
+
+        {this.state.isLoading && <Loader />}
+        {this.state.error !== null && (
+          <p>Oops, some error occured... {this.state.error}</p>
+        )}
+
         <ImageGallery images={this.state.images} />
-        <LoadMoreBtn handleLoadMore={this.handleLoadMore} />
+        {this.state.isMore && (
+          <LoadMoreBtn handleLoadMore={this.handleLoadMore} />
+        )}
       </div>
     );
   }
