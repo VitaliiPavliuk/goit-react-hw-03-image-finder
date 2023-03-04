@@ -36,7 +36,7 @@ export class ModalImage extends Component {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <img src={image} />
+        <img src={image} alt="" />
       </Modal>
     );
   }
