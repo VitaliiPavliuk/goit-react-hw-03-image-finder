@@ -22,13 +22,18 @@ export class App extends Component {
   };
 
   handleSetSearchQuery = searchTerm => {
-    this.setState({ query: searchTerm });
+    this.setState({ query: searchTerm, page: 1 });
   };
 
   componentDidUpdate(_, prevState) {
+    if (this.state.query === '') {
+      Notify.failure('Please enter a search query.');
+      return;
+    }
+
     if (
-      prevState.page !== this.state.page ||
-      prevState.query !== this.state.query
+      prevState.query !== this.state.query ||
+      prevState.page !== this.state.page
     ) {
       const fetchImages = async () => {
         try {
@@ -36,7 +41,7 @@ export class App extends Component {
 
           const images = await requestImages(this.state.query, this.state.page);
 
-          if (images.hits.length === 0) {
+          if (images.totalHits === 0) {
             Notify.failure(
               'Sorry, there are no images matching your search query. Please try again.'
             );
@@ -47,21 +52,19 @@ export class App extends Component {
             this.setState({ isMore: true });
           } else {
             this.setState({ isMore: false });
-            Notify.info(
-              `We're sorry, but you've reached the end of search results.`
-            );
+            Notify.info(`You've reached the end of search results.`);
           }
 
-          if (prevState.query !== this.state.query) {
-            this.setState({
-              images: images.hits,
-            });
-          }
-
-          if (prevState.page !== this.state.page) {
+          if (this.state.page > prevState.page) {
             this.setState(prev => ({
               images: [...prev.images, ...images.hits],
             }));
+            console.log(`add page: ${this.state.page}`);
+          } else {
+            this.setState({
+              images: images.hits,
+            });
+            console.log(`change page: ${this.state.page}`);
           }
         } catch (error) {
           this.setState({ error: error.message });
