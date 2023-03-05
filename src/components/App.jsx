@@ -59,12 +59,10 @@ export class App extends Component {
             this.setState(prev => ({
               images: [...prev.images, ...images.hits],
             }));
-            console.log(`add page: ${this.state.page}`);
           } else {
             this.setState({
               images: images.hits,
             });
-            console.log(`change page: ${this.state.page}`);
           }
         } catch (error) {
           this.setState({ error: error.message });
