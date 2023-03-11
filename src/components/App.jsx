@@ -22,7 +22,7 @@ export class App extends Component {
   };
 
   handleSetSearchQuery = searchTerm => {
-    this.setState({ query: searchTerm, page: 1 });
+    this.setState({ query: searchTerm, page: 1, images: [], isMore: false });
   };
 
   componentDidUpdate(_, prevState) {
@@ -48,22 +48,10 @@ export class App extends Component {
             return;
           }
 
-          if (images.totalHits - this.state.page * PER_PAGE > 0) {
-            this.setState({ isMore: true });
-          } else {
-            this.setState({ isMore: false });
-            Notify.info(`You've reached the end of search results.`);
-          }
-
-          if (this.state.page > prevState.page) {
-            this.setState(prev => ({
-              images: [...prev.images, ...images.hits],
-            }));
-          } else {
-            this.setState({
-              images: images.hits,
-            });
-          }
+          this.setState({
+            isMore: images.totalHits - this.state.page * PER_PAGE > 0,
+            images: [...this.state.images, ...images.hits],
+          });
         } catch (error) {
           this.setState({ error: error.message });
         } finally {
