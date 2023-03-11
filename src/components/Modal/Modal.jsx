@@ -1,43 +1,37 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import Modal from 'react-modal';
+import { ModalContent, Overlay } from './Modal.styled';
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    padding: '0',
-    border: 'none',
-    borderRadius: '0',
-  },
-  overlay: {
-    backgroundColor: '#000000bf',
-  },
-};
-
-Modal.setAppElement('#root');
-
-export class ModalImage extends Component {
+export class Modal extends Component {
   static propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    image: PropTypes.string.isRequired,
     onClose: PropTypes.func.isRequired,
   };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  handleKeyDown = e => {
+    if (e.code === 'Escape') {
+      this.props.onClose();
+    }
+  };
+
+  handleBackdropClick = e => {
+    if (e.currentTarget === e.target) {
+      this.props.onClose();
+    }
+  };
+
   render() {
-    const { isOpen, image, onClose } = this.props;
     return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        style={customStyles}
-        contentLabel="Example Modal"
-      >
-        <img src={image} alt="" />
-      </Modal>
+      <Overlay onClick={this.handleBackdropClick}>
+        <ModalContent>{this.props.children}</ModalContent>
+      </Overlay>
     );
   }
 }
